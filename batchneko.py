@@ -5,7 +5,7 @@ import requests
 import random
 def dl(url, filename):
 	open(filename, 'wb').write(requests.get(url).content)
-version = 31
+version = 32
 sfwd = "s"
 amountd = 1
 dir = ""
@@ -54,7 +54,18 @@ def getfilename(url):
         else:
                 purl = url
         return purl.rsplit("/", 1)[1]
-def nekodl(sfw, amount, stdscr):
+def nekodl(sfw, damount, stdscr):
+        if damount == False:
+                curses.echo()
+                stdscr.attron(curses.color_pair(2))
+                stdscr.addstr(8, 1, "Amount:")
+                stdscr.attroff(curses.color_pair(2))
+                amount = int(stdscr.getstr(8, 1 + len("Amount:")))
+                curses.noecho()
+        else:
+                amount = amountd
+        stdscr.addstr(9,1,"Progress: 0%")
+        stdscr.refresh()
         if sfw == "s":
             apiurl = ["https://nekos.life/api/v2/img/neko"]
         elif sfw == "n":
@@ -75,19 +86,21 @@ def nekodl(sfw, amount, stdscr):
                 if url in urls:
                     duplicates += 1
                     stdscr.addstr(0, 0, str(duplicates))
-                    stdscr.addstr(7,1,str(round((i+1)/amount*100))+"%")
+                    stdscr.addstr(9,1,"Progress: "+str(round((i+1)/amount*100))+"%")
                     stdscr.refresh()
                 else:
                     urls.append(url)
                     dl(url, dir + getfilename(url))
-                    stdscr.addstr(7,1,str(round((i+1)/amount*100))+"%")
+                    stdscr.addstr(9,1,"Progress: "+str(round((i+1)/amount*100))+"%")
                     stdscr.refresh()
 def urlsave(stdscr):
+        stdscr.addstr(9,1,"Progress: 0%")
+        stdscr.refresh()
         with open('urlmap.json') as urlmap:
                 url = json.load(urlmap)
         for i in range(len(url)):
-                dl(url[i], getfilename(url[i]))
-                stdscr.addstr(7,1,str(round((i+1)/len(url)*100))+"%")
+                dl(url[i], dir + getfilename(url[i]))
+                stdscr.addstr(9,1,"Progress: "+str(round((i+1)/len(url)*100))+"%")
                 stdscr.refresh()
 def urldump():
         urls = []
@@ -148,11 +161,15 @@ def display_menu(stdscr, sel_row, clear):
 		stdscr.clear()
 	stdscr.addstr(0, 0, topstr)
 	stdscr.addstr(1, 1, "Welcome to " + name + "!")
-	stdscr.addstr(2, 1, midstr)
-	stdscr.addstr(3, 1, "version: " + str(version))
+	stdscr.addstr(2, 1, "version: " + str(version))
+	stdscr.addstr(3, 1, midstr)
 	stdscr.addstr(4, 1, "directory: " + dir)
-	stdscr.addstr(5, 1, midstr)
-	stdscr.addstr(6, 1, "Amount:")
+	stdscr.addstr(5, 1, "default amount: " + str(amountd))
+	stdscr.addstr(6, 1, "default arg: " + sfwd)
+	stdscr.addstr(7, 1, midstr)
+	stdscr.addstr(8, 1, "Amount:")
+	stdscr.addstr(9, 1, "Progress:")
+	stdscr.addstr(10, 1, midstr)
 	stdscr.addstr(boxy - 2, 1, linstr)
 	stdscr.addstr(boxy, 0, botstr)
 	for i in range(boxy - 1):
@@ -195,46 +212,21 @@ def test(stdscr: 'curses._CursesWindow') -> int:
                                 current_row += 1
                 elif key == curses.KEY_ENTER or key in [10, 13]:
                         if current_row == 0:
-                                curses.echo()
-                                stdscr.attron(curses.color_pair(2))
-                                stdscr.addstr(6, 1, "Amount:")
-                                stdscr.attroff(curses.color_pair(2))
-                                amount = int(stdscr.getstr(6, 1 + len("Amount:")))
-                                curses.noecho()
-                                stdscr.addstr(7,1,"0%")
-                                stdscr.refresh()
-                                nekodl("s", amount, stdscr)
+                                nekodl("s", False, stdscr)
+                                stdscr.clear()
                         elif current_row == 1:
-                                curses.echo()
-                                stdscr.attron(curses.color_pair(2))
-                                stdscr.addstr(6, 1, "Amount:")
-                                stdscr.attroff(curses.color_pair(2))
-                                amount = int(stdscr.getstr(6, 1 + len("Amount:")))
-                                curses.noecho()
-                                stdscr.addstr(7,1,"0%")
-                                stdscr.refresh()
-                                nekodl("n", amount, stdscr)
+                                nekodl("n", False, stdscr)
+                                stdscr.clear()
                         elif current_row == 2:
-                                curses.echo()
-                                stdscr.attron(curses.color_pair(2))
-                                stdscr.addstr(6, 1, "Amount:")
-                                stdscr.attroff(curses.color_pair(2))
-                                amount = int(stdscr.getstr(6, 1 + len("Amount:")))
-                                curses.noecho()
-                                stdscr.addstr(7,1,"0%")
-                                stdscr.refresh()
-                                nekodl("g", amount, stdscr)
+                                nekodl("g", False, stdscr)
+                                stdscr.clear()
                         elif current_row == 3:
-                                stdscr.addstr(7,1,"0%")
-                                stdscr.refresh()
-                                nekodl(sfwd, amountd, stdscr)
+                                nekodl(sfwd, True, stdscr)
+                                stdscr.clear()
                         elif current_row == 4:
                                 cmd = "urldump"
                                 break
                         elif current_row == 5:
-                                stdscr.clear()
-                                stdscr.addstr(7,1,"0%")
-                                stdscr.refresh()
                                 urlsave(stdscr)
                         elif current_row == 6:
                                 exit()
