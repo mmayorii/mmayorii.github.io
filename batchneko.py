@@ -5,7 +5,7 @@ import requests
 import random
 def dl(url, filename):
 	open(filename, 'wb').write(requests.get(url).content)
-version = 29
+version = 30
 sfwd = "s"
 amountd = 1
 dir = ""
@@ -75,6 +75,8 @@ def nekodl(sfw, amount, stdscr):
                 if url in urls:
                     duplicates += 1
                     stdscr.addstr(0, 0, str(duplicates))
+                    stdscr.addstr(h//2,w//2-3,str(round((i+1)/amount*100))+"%")
+                    stdscr.refresh()
                 else:
                     urls.append(url)
                     dl(url, dir + getfilename(url))
