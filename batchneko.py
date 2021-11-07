@@ -5,7 +5,7 @@ import requests
 import random
 def dl(url, filename):
 	open(filename, 'wb').write(requests.get(url).content)
-version = 30
+version = 31
 sfwd = "s"
 amountd = 1
 dir = ""
@@ -75,19 +75,19 @@ def nekodl(sfw, amount, stdscr):
                 if url in urls:
                     duplicates += 1
                     stdscr.addstr(0, 0, str(duplicates))
-                    stdscr.addstr(h//2,w//2-3,str(round((i+1)/amount*100))+"%")
+                    stdscr.addstr(7,1,str(round((i+1)/amount*100))+"%")
                     stdscr.refresh()
                 else:
                     urls.append(url)
                     dl(url, dir + getfilename(url))
-                    stdscr.addstr(h//2,w//2-3,str(round((i+1)/amount*100))+"%")
+                    stdscr.addstr(7,1,str(round((i+1)/amount*100))+"%")
                     stdscr.refresh()
 def urlsave(stdscr):
         with open('urlmap.json') as urlmap:
                 url = json.load(urlmap)
         for i in range(len(url)):
                 dl(url[i], getfilename(url[i]))
-                stdscr.addstr(h//2,w//2-3,str(round((i+1)/len(url)*100))+"%")
+                stdscr.addstr(7,1,str(round((i+1)/len(url)*100))+"%")
                 stdscr.refresh()
 def urldump():
         urls = []
@@ -123,36 +123,52 @@ def urldump():
         with open('urlmap.json', 'w') as urlmap:
             json.dump(urls, urlmap, indent=2)
         print(duplicates)
-menu = ["sfw", "nsfw", "gif", "default", "urldump", "urlsave", "exit"]
-col = 1
-amx = 0
-amy = 0
+name = "batchneko"
+boxx = 78
+boxy = 23
+menu = ["[ sfw ]", "[ nsfw ]", "[ gif ]", "[ default ]", "[ urldump ]", "[ urlsave ]", "[ exit ]"]
+Xs = [1]
+topstr = "┌"
+botstr = "└"
+midstr = ""
+linstr = ""
+for i in range(boxx - len("[" + name + "]─┐")):
+	topstr += "─"
+	midstr += "─"
+topstr += "[" + name + "]─┐"
+for i in range(boxx - len("┘")):
+	botstr += "─"
+botstr += "┘"
+for i in range(len(botstr) - 2):
+	linstr += "─"
+for i in range(len(menu)):
+	Xs.append(len(menu[i]) + Xs[-1] + 2)
 def display_menu(stdscr, sel_row, clear):
-        global col
-        global h
-        global w
-        global amx
-        global amy
-        if clear == True:
-                stdscr.clear()
-        amx = w//2 - len("Amount:")//2
-        amy = h//2 - len(menu)//2 - 1
-        for idx, row in enumerate(menu):
-                x = w//2 - len(row)//2
-                y = h//2 - len(menu)//2 + idx
-                if idx == sel_row:
-                        stdscr.attron(curses.color_pair(col))
-                        stdscr.addstr(y, x, row)
-                        stdscr.attroff(curses.color_pair(col))
-                else:
-                        stdscr.addstr(y, x, row)
-                stdscr.refresh()
-
-
+	if clear == True:
+		stdscr.clear()
+	stdscr.addstr(0, 0, topstr)
+	stdscr.addstr(1, 1, "Welcome to " + name + "!")
+	stdscr.addstr(2, 1, midstr)
+	stdscr.addstr(3, 1, "version: " + str(version))
+	stdscr.addstr(4, 1, "directory: " + dir)
+	stdscr.addstr(5, 1, midstr)
+	stdscr.addstr(6, 1, "Amount:")
+	stdscr.addstr(boxy - 2, 1, linstr)
+	stdscr.addstr(boxy, 0, botstr)
+	for i in range(boxy - 1):
+		stdscr.addstr(i+1, 0, "│")
+		stdscr.addstr(i+1, boxx, "│")
+	for idx, row in enumerate(menu):
+		x = Xs[idx]
+		y = boxy - 1
+		if idx == sel_row:
+			stdscr.attron(curses.color_pair(2))
+			stdscr.addstr(y, x, row)
+			stdscr.attroff(curses.color_pair(2))
+		else:
+			stdscr.addstr(y, x, row)
+		stdscr.refresh()
 def test(stdscr: 'curses._CursesWindow') -> int:
-        global col
-        global h
-        global w
         global amount
         global zip
         global cmd
@@ -160,10 +176,7 @@ def test(stdscr: 'curses._CursesWindow') -> int:
         try:
                 curses.curs_set(0)
         except curses.error:
-                stdscr.attron(curses.color_pair(1))
-                stdscr.insstr(0, 0, "Your terminal does not support cursor hiding. You may experience issues")
-                stdscr.attroff(curses.color_pair(1))
-        stdscr.addstr(h - 1, 0, "version: " + str(version))
+                pass
         curses.init_pair(1, curses.COLOR_RED, curses.COLOR_YELLOW)
         curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
         current_row = 0
@@ -171,52 +184,48 @@ def test(stdscr: 'curses._CursesWindow') -> int:
         while True:
                 key = stdscr.getch()
                 if key == curses.KEY_UP:
+                        current_row = 0
+                elif key == curses.KEY_DOWN:
+                        current_row = len(menu) - 1
+                elif key == curses.KEY_LEFT:
                         if current_row > 0:
                                 current_row -= 1
-                elif key == curses.KEY_DOWN:
+                elif key == curses.KEY_RIGHT:
                         if current_row < len(menu) - 1:
                                 current_row += 1
-                elif key == curses.KEY_LEFT:
-                        current_row = 0
-                elif key == curses.KEY_RIGHT:
-                        current_row = len(menu) - 1
                 elif key == curses.KEY_ENTER or key in [10, 13]:
                         if current_row == 0:
                                 curses.echo()
                                 stdscr.attron(curses.color_pair(2))
-                                stdscr.insstr(amy, amx, "Amount:")
+                                stdscr.addstr(6, 1, "Amount:")
                                 stdscr.attroff(curses.color_pair(2))
-                                amount = int(stdscr.getstr(amy, amx + len("Amount:")))
+                                amount = int(stdscr.getstr(6, 1 + len("Amount:")))
                                 curses.noecho()
-                                stdscr.clear()
-                                stdscr.addstr(h//2,w//2-2,"0%")
+                                stdscr.addstr(7,1,"0%")
                                 stdscr.refresh()
                                 nekodl("s", amount, stdscr)
                         elif current_row == 1:
                                 curses.echo()
                                 stdscr.attron(curses.color_pair(2))
-                                stdscr.insstr(amy, amx, "Amount:")
+                                stdscr.addstr(6, 1, "Amount:")
                                 stdscr.attroff(curses.color_pair(2))
-                                amount = int(stdscr.getstr(amy, amx + len("Amount:")))
+                                amount = int(stdscr.getstr(6, 1 + len("Amount:")))
                                 curses.noecho()
-                                stdscr.clear()
-                                stdscr.addstr(h//2,w//2-2,"0%")
+                                stdscr.addstr(7,1,"0%")
                                 stdscr.refresh()
                                 nekodl("n", amount, stdscr)
                         elif current_row == 2:
                                 curses.echo()
                                 stdscr.attron(curses.color_pair(2))
-                                stdscr.insstr(amy, amx, "Amount:")
+                                stdscr.addstr(6, 1, "Amount:")
                                 stdscr.attroff(curses.color_pair(2))
-                                amount = int(stdscr.getstr(amy, amx + len("Amount:")))
+                                amount = int(stdscr.getstr(6, 1 + len("Amount:")))
                                 curses.noecho()
-                                stdscr.clear()
-                                stdscr.addstr(h//2,w//2-2,"0%")
+                                stdscr.addstr(7,1,"0%")
                                 stdscr.refresh()
                                 nekodl("g", amount, stdscr)
                         elif current_row == 3:
-                                stdscr.clear()
-                                stdscr.addstr(h//2,w//2-2,"0%")
+                                stdscr.addstr(7,1,"0%")
                                 stdscr.refresh()
                                 nekodl(sfwd, amountd, stdscr)
                         elif current_row == 4:
@@ -224,7 +233,7 @@ def test(stdscr: 'curses._CursesWindow') -> int:
                                 break
                         elif current_row == 5:
                                 stdscr.clear()
-                                stdscr.addstr(h//2,w//2-2,"0%")
+                                stdscr.addstr(7,1,"0%")
                                 stdscr.refresh()
                                 urlsave(stdscr)
                         elif current_row == 6:
