@@ -5,7 +5,7 @@ import requests
 import random
 def dl(url, filename):
 	open(filename, 'wb').write(requests.get(url).content)
-version = 32
+version = 33
 sfwd = "s"
 amountd = 1
 dir = ""
@@ -61,6 +61,7 @@ def nekodl(sfw, damount, stdscr):
                 stdscr.addstr(8, 1, "Amount:")
                 stdscr.attroff(curses.color_pair(2))
                 amount = int(stdscr.getstr(8, 1 + len("Amount:")))
+                stdscr.addstr(8, 1, "Amount:")
                 curses.noecho()
         else:
                 amount = amountd
@@ -85,7 +86,7 @@ def nekodl(sfw, damount, stdscr):
             if url.find('/'):
                 if url in urls:
                     duplicates += 1
-                    stdscr.addstr(0, 0, str(duplicates))
+                    stdscr.addstr(10, 1, "Duplicates: " + str(duplicates))
                     stdscr.addstr(9,1,"Progress: "+str(round((i+1)/amount*100))+"%")
                     stdscr.refresh()
                 else:
@@ -161,15 +162,16 @@ def display_menu(stdscr, sel_row, clear):
 		stdscr.clear()
 	stdscr.addstr(0, 0, topstr)
 	stdscr.addstr(1, 1, "Welcome to " + name + "!")
-	stdscr.addstr(2, 1, "version: " + str(version))
-	stdscr.addstr(3, 1, midstr)
+	stdscr.addstr(2, 1, midstr)
+	stdscr.addstr(3, 1, "version: " + str(version))
 	stdscr.addstr(4, 1, "directory: " + dir)
 	stdscr.addstr(5, 1, "default amount: " + str(amountd))
 	stdscr.addstr(6, 1, "default arg: " + sfwd)
 	stdscr.addstr(7, 1, midstr)
 	stdscr.addstr(8, 1, "Amount:")
 	stdscr.addstr(9, 1, "Progress:")
-	stdscr.addstr(10, 1, midstr)
+	stdscr.addstr(10, 1, "Duplicates:")
+	stdscr.addstr(11, 1, midstr)
 	stdscr.addstr(boxy - 2, 1, linstr)
 	stdscr.addstr(boxy, 0, botstr)
 	for i in range(boxy - 1):
