@@ -5,7 +5,7 @@ import requests
 import random
 def dl(url, filename):
 	open(filename, 'wb').write(requests.get(url).content)
-version = 34
+version = 35
 sfwd = "s"
 amountd = 1
 dir = ""
