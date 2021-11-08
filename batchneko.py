@@ -5,25 +5,37 @@ import requests
 import random
 def dl(url, filename):
 	open(filename, 'wb').write(requests.get(url).content)
-version = 35
+version = 36
 sfwd = "s"
 amountd = 1
 dir = ""
 zip = "n"
 if os.path.exists("config.json"):
         with open('config.json') as config:
-                data = json.load(config)
-                dir = data['savedir']
-                askupdate = data['askupdate']
-                sfwd = data['sfw']
-                amountd = data['amount']
+                try:
+                        data = json.load(config)
+                        dir = data['savedir']
+                        askupdate = data['askupdate']
+                        sfwd = data['sfw']
+                        amountd = data['amount']
+                except Exception:
+                                print("Config does not have all the needed parameters.")
+                                exit()
 else:
-        print("Created config file.")
+        print("Creating config file.")
         dir = input("Directory:")
+        if dir == "":
+                dir = "./"
         if dir.endswith("/") == False:
                 dir = dir + "/"
         askupdate = input("Check for updates automatically?(y/n)")
+        if askupdate != "y" and askupdate != "n":
+                print("Input error. Defaulting to yes")
+                askupdate = "y"
         sfwd = input("Default nekodl argument: ")
+        if sfwd != "s" and sfwd != "n" and sfwd != "g":
+                print("Input error. Defaulting to sfw")
+                sfwd = "s"
         amountd = int(input("Default amount: "))
         writetojson = {'savedir':dir, 'askupdate':askupdate, 'amount':amountd, 'sfw':sfwd}
         with open('config.json', 'w') as c:
@@ -119,7 +131,7 @@ def urlsave(stdscr):
                 stdscr.addstr(11,1,genpbar(round((i+1)/len(url)*100), True))
                 stdscr.refresh()
 name = "batchneko"
-boxx = 78
+boxx = 63
 boxy = 23
 menu = ["[ sfw ]", "[ nsfw ]", "[ gif ]", "[ default ]", "[ urlsave ]", "[ exit ]"]
 Xs = [1]
