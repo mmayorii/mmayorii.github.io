@@ -5,7 +5,7 @@ import requests
 import random
 def dl(url, filename):
 	open(filename, 'wb').write(requests.get(url).content)
-version = 33
+version = 34
 sfwd = "s"
 amountd = 1
 dir = ""
@@ -54,6 +54,19 @@ def getfilename(url):
         else:
                 purl = url
         return purl.rsplit("/", 1)[1]
+def genpbar(percentage, showpercentage):
+        if percentage > 100:
+                return "error"
+        pbarstr = "["
+        pbar = percentage // 5
+        for i in range(pbar):
+                pbarstr += "#"
+        for i in range(20 - pbar):
+                pbarstr += " "
+        pbarstr += "]"
+        if showpercentage == True:
+                pbarstr += str(percentage) + "%"
+        return pbarstr
 def nekodl(sfw, damount, stdscr):
         if damount == False:
                 curses.echo()
@@ -65,7 +78,8 @@ def nekodl(sfw, damount, stdscr):
                 curses.noecho()
         else:
                 amount = amountd
-        stdscr.addstr(9,1,"Progress: 0%")
+                stdscr.addstr(8, 1, "Amount:" + str(amount))
+        stdscr.addstr(11, 1, genpbar(0, True))
         stdscr.refresh()
         if sfw == "s":
             apiurl = ["https://nekos.life/api/v2/img/neko"]
@@ -87,21 +101,22 @@ def nekodl(sfw, damount, stdscr):
                 if url in urls:
                     duplicates += 1
                     stdscr.addstr(10, 1, "Duplicates: " + str(duplicates))
-                    stdscr.addstr(9,1,"Progress: "+str(round((i+1)/amount*100))+"%")
+                    stdscr.addstr(11,1,genpbar(round((i+1)/amount*100), True))
                     stdscr.refresh()
                 else:
                     urls.append(url)
                     dl(url, dir + getfilename(url))
-                    stdscr.addstr(9,1,"Progress: "+str(round((i+1)/amount*100))+"%")
+                    stdscr.addstr(11,1,genpbar(round((i+1)/amount*100), True))
                     stdscr.refresh()
 def urlsave(stdscr):
-        stdscr.addstr(9,1,"Progress: 0%")
-        stdscr.refresh()
         with open('urlmap.json') as urlmap:
                 url = json.load(urlmap)
+        stdscr.addstr(8, 1, "Amount:" + str(len(url)))
+        stdscr.addstr(11, 1, genpbar(0, True))
+        stdscr.refresh()
         for i in range(len(url)):
                 dl(url[i], dir + getfilename(url[i]))
-                stdscr.addstr(9,1,"Progress: "+str(round((i+1)/len(url)*100))+"%")
+                stdscr.addstr(11,1,genpbar(round((i+1)/len(url)*100), True))
                 stdscr.refresh()
 def urldump():
         urls = []
@@ -169,9 +184,9 @@ def display_menu(stdscr, sel_row, clear):
 	stdscr.addstr(6, 1, "default arg: " + sfwd)
 	stdscr.addstr(7, 1, midstr)
 	stdscr.addstr(8, 1, "Amount:")
-	stdscr.addstr(9, 1, "Progress:")
-	stdscr.addstr(10, 1, "Duplicates:")
-	stdscr.addstr(11, 1, midstr)
+	stdscr.addstr(9, 1, "Duplicates:")
+	stdscr.addstr(10, 1, midstr)
+	stdscr.addstr(11, 1, genpbar(0, False))
 	stdscr.addstr(boxy - 2, 1, linstr)
 	stdscr.addstr(boxy, 0, botstr)
 	for i in range(boxy - 1):
@@ -230,6 +245,7 @@ def test(stdscr: 'curses._CursesWindow') -> int:
                                 break
                         elif current_row == 5:
                                 urlsave(stdscr)
+                                stdscr.clear()
                         elif current_row == 6:
                                 exit()
                 display_menu(stdscr, current_row, False)
