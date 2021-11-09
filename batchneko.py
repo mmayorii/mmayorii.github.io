@@ -5,7 +5,7 @@ import requests
 import random
 def dl(url, filename):
 	open(filename, 'wb').write(requests.get(url).content)
-version = 37
+version = 38
 sfwd = "s"
 amountd = 1
 dir = ""
@@ -51,11 +51,11 @@ else:
                 json.dump(writetojson, c, indent=2)
 def Update():
         print("Checking for updates...")
-        newver = int(requests.get("https://mmayorii.github.io/version.txt").content)
+        newver = int(requests.get("https://phil213314.github.io/batchneko/version.txt").content)
         if newver > version:
                 print("New version available.")
                 if input("Update? (y/n) ") == "y":
-                        dl("https://mmayorii.github.io/batchneko.py", "update.py")
+                        dl("https://phil213314.github.io/batchneko/batchneko.py", "update.py")
                         if os.path.exists("batchneko.py"):
                                 os.remove("batchneko.py")
                         else:
