@@ -5,7 +5,7 @@ import requests
 import random
 def dl(url, filename):
 	open(filename, 'wb').write(requests.get(url).content)
-version = 36
+version = 37
 sfwd = "s"
 amountd = 1
 dir = ""
@@ -18,8 +18,10 @@ if os.path.exists("config.json"):
                         askupdate = data['askupdate']
                         sfwd = data['sfw']
                         amountd = data['amount']
+                        termsafe = data['uiscale']
                 except Exception:
-                                print("Config does not have all the needed parameters.")
+                                print("Config does not have all the needed parameters. Relaunch the script to reconfigure it.")
+                                os.rename("config.json", "config-old.json")
                                 exit()
 else:
         print("Creating config file.")
@@ -37,7 +39,14 @@ else:
                 print("Input error. Defaulting to sfw")
                 sfwd = "s"
         amountd = int(input("Default amount: "))
-        writetojson = {'savedir':dir, 'askupdate':askupdate, 'amount':amountd, 'sfw':sfwd}
+        termsafe = int(input("UI scale (0/1/2) (default 0)"))
+        if termsafe == 1 or termsafe == 2:
+                print("If you are experiencing errors while loading ui change the scale to 0")
+        elif termsafe == 0:
+                pass
+        else:
+                print("Input error. Defaulting to 0")
+        writetojson = {'savedir':dir, 'askupdate':askupdate, 'amount':amountd, 'sfw':sfwd, 'uiscale':termsafe}
         with open('config.json', 'w') as c:
                 json.dump(writetojson, c, indent=2)
 def Update():
@@ -131,8 +140,15 @@ def urlsave(stdscr):
                 stdscr.addstr(11,1,genpbar(round((i+1)/len(url)*100), True))
                 stdscr.refresh()
 name = "batchneko"
-boxx = 63
 boxy = 23
+boxx = 63
+if termsafe == 0:
+        boxx = 63
+elif termsafe == 1:
+        boxx = 78
+elif termsafe == 2:
+        boxx = 84
+        boxy = 30
 menu = ["[ sfw ]", "[ nsfw ]", "[ gif ]", "[ default ]", "[ urlsave ]", "[ exit ]"]
 Xs = [1]
 topstr = "┌"
